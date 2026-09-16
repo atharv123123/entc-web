@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth";
 
 const PUBLIC_PATHS = [
   "/",
@@ -35,20 +34,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const user = await getCurrentUser();
+  const sessionToken = request.cookies.get("entc_session")?.value ?? null;
 
-  if (!user && !isPublicPath(pathname)) {
+  if (!sessionToken && !isPublicPath(pathname)) {
     const loginUrl = new URL("/auth/login", request.url);
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);
-  }
-
-  if (user && isAdminPath(pathname) && user.role !== "admin") {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
-  }
-
-  if (user && pathname.startsWith("/auth/")) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
   const response = NextResponse.next();
