@@ -8,7 +8,7 @@ export default function SiteFooter() {
           <div>
             <div className="flex items-center gap-2">
               <Image
-                src="/entc-logo.png"
+                src="/entc-logo.jpeg"
                 alt="E&TC Logo"
                 width={32}
                 height={32}

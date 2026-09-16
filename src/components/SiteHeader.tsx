@@ -23,7 +23,7 @@ export default async function SiteHeader() {
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-3">
         <Link href="/" className="flex items-center gap-2">
           <Image
-            src="/entc-logo.png"
+            src="/entc-logo.jpeg"
             alt="E&TC Logo"
             width={40}
             height={40}
