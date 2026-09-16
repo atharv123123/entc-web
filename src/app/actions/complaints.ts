@@ -5,6 +5,7 @@ import { complaints } from "@/db/schema";
 import { requireAdmin, requireUser } from "@/lib/auth";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
+import { sanitizeInput, validateUUID } from "@/lib/validation";
 
 export type ComplaintActionState = { error?: string };
 
@@ -14,9 +15,9 @@ export async function createComplaintAction(
 ): Promise<ComplaintActionState> {
   const user = await requireUser();
 
-  const category = String(formData.get("category") ?? "").trim();
-  const subject = String(formData.get("subject") ?? "").trim();
-  const description = String(formData.get("description") ?? "").trim();
+  const category = sanitizeInput(String(formData.get("category") ?? ""), 100);
+  const subject = sanitizeInput(String(formData.get("subject") ?? ""), 200);
+  const description = sanitizeInput(String(formData.get("description") ?? ""), 5000);
 
   if (!category || !subject || !description) {
     return { error: "Please fill all fields." };
@@ -38,19 +39,21 @@ export async function updateComplaintStatusAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   const status = String(formData.get("status") ?? "");
 
-  if (!id) return;
-  if (!['submitted','in_progress','resolved'].includes(status)) return;
+  if (!id || !validateUUID(id)) return;
+  if (!["submitted", "in_progress", "resolved"].includes(status)) return;
 
-  await db.update(complaints).set({ status: status as any }).where(eq(complaints.id, id));
+  await db
+    .update(complaints)
+    .set({ status: status as "submitted" | "in_progress" | "resolved" })
+    .where(eq(complaints.id, id));
   redirect("/admin");
 }
 
 export async function deleteComplaintAction(formData: FormData) {
   const user = await requireUser();
   const id = String(formData.get("id") ?? "");
-  if (!id) return;
+  if (!id || !validateUUID(id)) return;
 
-  // user can delete only own complaints that are still submitted
   const row = await db
     .select({ id: complaints.id, userId: complaints.userId, status: complaints.status })
     .from(complaints)

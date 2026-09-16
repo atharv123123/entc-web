@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { feedback } from "@/db/schema";
 import { requireUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { sanitizeInput, validateRating } from "@/lib/validation";
 
 export type FeedbackActionState = { error?: string };
 
@@ -14,11 +15,11 @@ export async function createFeedbackAction(
   const user = await requireUser();
 
   const ratingRaw = String(formData.get("rating") ?? "").trim();
-  const message = String(formData.get("message") ?? "").trim();
+  const message = sanitizeInput(String(formData.get("message") ?? ""), 5000);
 
   const rating = ratingRaw ? Number(ratingRaw) : null;
   if (!message) return { error: "Please enter your feedback." };
-  if (rating !== null && (!Number.isFinite(rating) || rating < 1 || rating > 5)) {
+  if (!validateRating(rating)) {
     return { error: "Rating must be between 1 and 5." };
   }
 

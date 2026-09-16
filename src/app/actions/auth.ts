@@ -1,13 +1,20 @@
 "use server";
 
 import { db } from "@/db";
-import { passwordResets, users } from "@/db/schema";
+import { passwordResets, sessions, users } from "@/db/schema";
 import { createSession, logout } from "@/lib/auth";
 import { sha256Base64Url, randomTokenBase64Url } from "@/lib/crypto";
 import { sendMail } from "@/lib/email";
 import { and, eq, gt, sql } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
+import {
+  sanitizeInput,
+  validateEmail,
+  validateName,
+  validatePassword,
+} from "@/lib/validation";
+import { rateLimitLogin, rateLimitPasswordReset, rateLimitRegister } from "@/lib/rate-limit";
 
 export type AuthActionState = { error?: string; success?: string };
 
@@ -15,11 +22,21 @@ function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
 }
 
+function getClientIp(): string {
+  return "global";
+}
+
 export async function registerAction(
   _prev: AuthActionState,
   formData: FormData,
 ): Promise<AuthActionState> {
-  const name = String(formData.get("name") ?? "").trim();
+  const ip = getClientIp();
+  const rl = rateLimitRegister(ip);
+  if (!rl.allowed) {
+    return { error: `Too many attempts. Try again in ${Math.ceil(rl.retryAfterMs / 60000)} minutes.` };
+  }
+
+  const name = sanitizeInput(String(formData.get("name") ?? ""), 200);
   const emailRaw = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
 
@@ -29,8 +46,17 @@ export async function registerAction(
     return { error: "Please fill all fields." };
   }
 
-  if (password.length < 6) {
-    return { error: "Password must be at least 6 characters." };
+  if (!validateName(name)) {
+    return { error: "Name must be 1-200 characters." };
+  }
+
+  if (!validateEmail(email)) {
+    return { error: "Invalid email format." };
+  }
+
+  const pwResult = validatePassword(password);
+  if (!pwResult.valid) {
+    return { error: pwResult.error };
   }
 
   const existing = await db
@@ -50,7 +76,7 @@ export async function registerAction(
   const adminCount = adminCountRows[0]?.count ?? 0;
   const canBeAdmin = adminCount < 2;
 
-  const passwordHash = await bcrypt.hash(password, 10);
+  const passwordHash = await bcrypt.hash(password, 12);
 
   const inserted = await db
     .insert(users)
@@ -73,12 +99,22 @@ export async function loginAction(
   _prev: AuthActionState,
   formData: FormData,
 ): Promise<AuthActionState> {
+  const ip = getClientIp();
+  const rl = rateLimitLogin(ip);
+  if (!rl.allowed) {
+    return { error: `Too many attempts. Try again in ${Math.ceil(rl.retryAfterMs / 60000)} minutes.` };
+  }
+
   const emailRaw = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
   const email = normalizeEmail(emailRaw);
 
   if (!email || !password) {
     return { error: "Please enter email and password." };
+  }
+
+  if (!validateEmail(email)) {
+    return { error: "Invalid email format." };
   }
 
   const row = await db
@@ -106,11 +142,21 @@ export async function forgotPasswordAction(
   _prev: AuthActionState,
   formData: FormData,
 ): Promise<AuthActionState> {
+  const ip = getClientIp();
+  const rl = rateLimitPasswordReset(ip);
+  if (!rl.allowed) {
+    return { error: `Too many attempts. Try again in ${Math.ceil(rl.retryAfterMs / 60000)} minutes.` };
+  }
+
   const emailRaw = String(formData.get("email") ?? "");
   const email = normalizeEmail(emailRaw);
 
   if (!email) {
     return { error: "Please enter your email address." };
+  }
+
+  if (!validateEmail(email)) {
+    return { error: "Invalid email format." };
   }
 
   const row = await db
@@ -166,8 +212,9 @@ export async function resetPasswordAction(
     return { error: "Please fill all fields." };
   }
 
-  if (password.length < 6) {
-    return { error: "Password must be at least 6 characters." };
+  const pwResult = validatePassword(password);
+  if (!pwResult.valid) {
+    return { error: pwResult.error };
   }
 
   if (password !== confirmPassword) {
@@ -195,7 +242,7 @@ export async function resetPasswordAction(
 
   const { id: resetId, userId } = resetRow[0];
 
-  const passwordHash = await bcrypt.hash(password, 10);
+  const passwordHash = await bcrypt.hash(password, 12);
 
   await db.transaction(async (tx) => {
     await tx
@@ -207,6 +254,8 @@ export async function resetPasswordAction(
       .update(passwordResets)
       .set({ usedAt: now })
       .where(eq(passwordResets.id, resetId));
+
+    await tx.delete(sessions).where(eq(sessions.userId, userId));
   });
 
   redirect("/auth/login?reset=success");

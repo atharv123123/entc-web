@@ -13,14 +13,17 @@ import {
 import { requireAdmin, requireSuperAdmin } from "@/lib/auth";
 import { eq, sql } from "drizzle-orm";
 import { redirect } from "next/navigation";
+import { sanitizeInput, validateName, validateUUID } from "@/lib/validation";
 
 export async function updateDepartmentInfoAction(formData: FormData) {
   await requireAdmin();
 
-  const motive = String(formData.get("motive") ?? "").trim();
-  const hodName = String(formData.get("hodName") ?? "").trim();
-  const vicePrincipalName = String(formData.get("vicePrincipalName") ?? "").trim();
-  const info = String(formData.get("info") ?? "").trim();
+  const motive = sanitizeInput(String(formData.get("motive") ?? ""), 2000);
+  const hodName = sanitizeInput(String(formData.get("hodName") ?? ""), 200);
+  const vicePrincipalName = sanitizeInput(String(formData.get("vicePrincipalName") ?? ""), 200);
+  const info = sanitizeInput(String(formData.get("info") ?? ""), 5000);
+
+  if (!motive || !hodName || !vicePrincipalName || !info) redirect("/admin");
 
   const row = await db.select({ id: departmentInfo.id }).from(departmentInfo).limit(1);
   const id = row[0]?.id;
@@ -39,16 +42,17 @@ export async function updateDepartmentInfoAction(formData: FormData) {
 export async function addFacultyAction(formData: FormData) {
   await requireAdmin();
 
-  const name = String(formData.get("name") ?? "").trim();
-  const designation = String(formData.get("designation") ?? "").trim();
+  const name = sanitizeInput(String(formData.get("name") ?? ""), 200);
+  const designation = sanitizeInput(String(formData.get("designation") ?? ""), 200);
   const sortOrder = Number(String(formData.get("sortOrder") ?? "0"));
 
   if (!name || !designation) redirect("/admin");
+  if (!validateName(name)) redirect("/admin");
 
   await db.insert(faculty).values({
     name,
     designation,
-    sortOrder: Number.isFinite(sortOrder) ? sortOrder : 0,
+    sortOrder: Number.isFinite(sortOrder) ? Math.min(sortOrder, 9999) : 0,
   });
 
   redirect("/admin");
@@ -57,7 +61,7 @@ export async function addFacultyAction(formData: FormData) {
 export async function deleteFacultyAction(formData: FormData) {
   await requireAdmin();
   const id = Number(String(formData.get("id") ?? "0"));
-  if (!id) redirect("/admin");
+  if (!id || !Number.isFinite(id)) redirect("/admin");
   await db.delete(faculty).where(eq(faculty.id, id));
   redirect("/admin");
 }
@@ -66,9 +70,9 @@ export async function updateStudentRoleAction(formData: FormData) {
   await requireAdmin();
 
   const id = Number(String(formData.get("id") ?? "0"));
-  const name = String(formData.get("name") ?? "");
+  const name = sanitizeInput(String(formData.get("name") ?? ""), 200);
 
-  if (!id) redirect("/admin");
+  if (!id || !Number.isFinite(id)) redirect("/admin");
 
   await db.update(studentRoles).set({ name }).where(eq(studentRoles.id, id));
   redirect("/admin");
@@ -77,8 +81,8 @@ export async function updateStudentRoleAction(formData: FormData) {
 export async function createAnnouncementAction(formData: FormData) {
   const admin = await requireAdmin();
 
-  const title = String(formData.get("title") ?? "").trim();
-  const body = String(formData.get("body") ?? "").trim();
+  const title = sanitizeInput(String(formData.get("title") ?? ""), 200);
+  const body = sanitizeInput(String(formData.get("body") ?? ""), 5000);
   if (!title || !body) redirect("/admin");
 
   await db.insert(announcements).values({ title, body, createdBy: admin.id });
@@ -88,7 +92,7 @@ export async function createAnnouncementAction(formData: FormData) {
 export async function deleteAnnouncementAction(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id") ?? "");
-  if (!id) redirect("/admin");
+  if (!id || !validateUUID(id)) redirect("/admin");
   await db.delete(announcements).where(eq(announcements.id, id));
   redirect("/admin");
 }
@@ -96,10 +100,10 @@ export async function deleteAnnouncementAction(formData: FormData) {
 export async function createEventAction(formData: FormData) {
   const admin = await requireAdmin();
 
-  const title = String(formData.get("title") ?? "").trim();
-  const description = String(formData.get("description") ?? "").trim();
+  const title = sanitizeInput(String(formData.get("title") ?? ""), 200);
+  const description = sanitizeInput(String(formData.get("description") ?? ""), 5000);
   const eventDate = String(formData.get("eventDate") ?? "").trim();
-  const location = String(formData.get("location") ?? "").trim();
+  const location = sanitizeInput(String(formData.get("location") ?? ""), 200);
 
   if (!title || !eventDate) redirect("/admin");
 
@@ -117,7 +121,7 @@ export async function createEventAction(formData: FormData) {
 export async function deleteEventAction(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id") ?? "");
-  if (!id) redirect("/admin");
+  if (!id || !validateUUID(id)) redirect("/admin");
   await db.delete(events).where(eq(events.id, id));
   redirect("/admin");
 }
@@ -125,9 +129,9 @@ export async function deleteEventAction(formData: FormData) {
 export async function createCompanyAction(formData: FormData) {
   await requireAdmin();
 
-  const name = String(formData.get("name") ?? "").trim();
+  const name = sanitizeInput(String(formData.get("name") ?? ""), 200);
   const visitDate = String(formData.get("visitDate") ?? "").trim();
-  const details = String(formData.get("details") ?? "").trim();
+  const details = sanitizeInput(String(formData.get("details") ?? ""), 5000);
 
   if (!name) redirect("/admin");
 
@@ -143,7 +147,7 @@ export async function createCompanyAction(formData: FormData) {
 export async function deleteCompanyAction(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id") ?? "");
-  if (!id) redirect("/admin");
+  if (!id || !validateUUID(id)) redirect("/admin");
   await db.delete(companies).where(eq(companies.id, id));
   redirect("/admin");
 }
@@ -151,7 +155,7 @@ export async function deleteCompanyAction(formData: FormData) {
 export async function promoteToAdminAction(formData: FormData) {
   await requireSuperAdmin();
   const userId = String(formData.get("userId") ?? "");
-  if (!userId) redirect("/admin/members");
+  if (!userId || !validateUUID(userId)) redirect("/admin/members");
 
   const adminCountRows = await db
     .select({ count: sql<number>`cast(count(*) as int)` })
@@ -169,7 +173,7 @@ export async function promoteToAdminAction(formData: FormData) {
 export async function demoteAdminAction(formData: FormData) {
   await requireSuperAdmin();
   const userId = String(formData.get("userId") ?? "");
-  if (!userId) redirect("/admin/members");
+  if (!userId || !validateUUID(userId)) redirect("/admin/members");
 
   await db.update(users).set({ role: "user" }).where(eq(users.id, userId));
   redirect("/admin/members");

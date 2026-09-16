@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 
 const SESSION_COOKIE_NAME = "entc_session";
 const SESSION_TTL_DAYS = 30;
+const SESSION_ROTATE_AFTER_DAYS = 7;
 
 export type CurrentUser = typeof users.$inferSelect;
 
@@ -63,6 +64,11 @@ export async function logout() {
   await clearSessionCookie();
 }
 
+export async function logoutAllSessions(userId: string) {
+  await db.delete(sessions).where(eq(sessions.userId, userId));
+  await clearSessionCookie();
+}
+
 export async function getCurrentUser(): Promise<CurrentUser | null> {
   const token = await getSessionCookie();
   if (!token) return null;
@@ -71,18 +77,33 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
   const now = new Date();
 
   const sessionRow = await db
-    .select({ userId: sessions.userId })
+    .select({ userId: sessions.userId, createdAt: sessions.createdAt, expiresAt: sessions.expiresAt })
     .from(sessions)
     .where(and(eq(sessions.tokenHash, tokenHash), gt(sessions.expiresAt, now)))
     .limit(1);
 
-  const userId = sessionRow[0]?.userId;
-  if (!userId) return null;
+  const session = sessionRow[0];
+  if (!session) return null;
+
+  const sessionAge = now.getTime() - new Date(session.createdAt).getTime();
+  if (sessionAge > SESSION_ROTATE_AFTER_DAYS * 24 * 60 * 60 * 1000) {
+    const newToken = randomTokenBase64Url(32);
+    const newTokenHash = sha256Base64Url(newToken);
+    const newExpiresAt = new Date(Date.now() + SESSION_TTL_DAYS * 24 * 60 * 60 * 1000);
+
+    await db.delete(sessions).where(eq(sessions.tokenHash, tokenHash));
+    await db.insert(sessions).values({
+      userId: session.userId,
+      tokenHash: newTokenHash,
+      expiresAt: newExpiresAt,
+    });
+    await setSessionCookie(newToken, newExpiresAt);
+  }
 
   const userRow = await db
     .select()
     .from(users)
-    .where(eq(users.id, userId))
+    .where(eq(users.id, session.userId))
     .limit(1);
 
   return userRow[0] ?? null;

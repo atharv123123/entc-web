@@ -33,3 +33,4 @@ playwright-report/
 
 # firecrawl
 .firecrawl/
+node_modules
