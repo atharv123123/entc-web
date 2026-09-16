@@ -8,7 +8,7 @@ export default function LoginPage() {
     <div className="mx-auto grid max-w-md gap-6">
       <div className="text-center">
         <h1 className="text-3xl font-semibold text-slate-950">Login</h1>
-        <p className="mt-2 text-sm text-slate-600">Access the ENTC Department portal.</p>
+        <p className="mt-2 text-sm text-slate-600">Access the E&TC Department portal.</p>
       </div>
 
       <div className="rounded-3xl border border-white/60 bg-white/70 p-6 shadow-sm backdrop-blur">

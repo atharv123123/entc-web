@@ -1,7 +1,7 @@
 [package]
 name = "entc-web"
 version = "0.1.0"
-description = "ENTC Web Application"
+description = "E&TC Web Application"
 
 [https]
 certificate = false

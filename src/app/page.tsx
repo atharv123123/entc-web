@@ -56,7 +56,7 @@ export default async function HomePage() {
           Electronics & Telecommunication Engineering
         </p>
         <h1 className="mt-4 text-balance text-4xl font-semibold leading-tight text-slate-950 md:text-5xl">
-          ENTC Department Portal — Complaints, Feedback, Announcements & Events
+          E&TC Department Portal — Complaints, Feedback, Announcements & Events
         </h1>
         <p className="mt-4 max-w-3xl text-base text-slate-700 md:text-lg">{dept.info.motive}</p>
         <div className="mt-8 flex flex-wrap gap-3">

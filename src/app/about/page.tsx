@@ -33,7 +33,7 @@ export default function AboutPage() {
   return (
     <div className="space-y-8">
       <section className="rounded-[2rem] border border-white/60 bg-white/60 p-8 shadow-sm backdrop-blur">
-        <h1 className="text-3xl font-semibold text-slate-950">About ENTC Department</h1>
+        <h1 className="text-3xl font-semibold text-slate-950">About E&TC Department</h1>
         <p className="mt-2 text-sm text-slate-600">
           The Department of Electronics and Telecommunication Engineering (E&amp;TC) at Dnyanshree
           Institute of Engineering and Technology is dedicated to producing skilled engineers ready

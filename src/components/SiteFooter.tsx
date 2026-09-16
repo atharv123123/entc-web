@@ -9,12 +9,12 @@ export default function SiteFooter() {
             <div className="flex items-center gap-2">
               <Image
                 src="/entc-logo.png"
-                alt="ENTC Logo"
+                alt="E&TC Logo"
                 width={32}
                 height={32}
                 className="rounded-lg"
               />
-              <div className="text-sm font-semibold text-slate-950">ENTC Fix</div>
+              <div className="text-sm font-semibold text-slate-950">E&TC Fix</div>
             </div>
             <p className="mt-2 text-sm text-slate-600">
               A simple department portal for complaints, feedback, announcements, events, permissions and placement
@@ -46,7 +46,7 @@ export default function SiteFooter() {
             <p className="mt-2">For any urgent issue, contact department office.</p>
           </div>
         </div>
-        <div className="mt-10 text-xs text-slate-500">© {new Date().getFullYear()} ENTC Department</div>
+        <div className="mt-10 text-xs text-slate-500">© {new Date().getFullYear()} E&TC Department</div>
       </div>
     </footer>
   );

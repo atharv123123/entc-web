@@ -5,9 +5,9 @@ import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
 
 export const metadata = {
-  title: "ENTC Fix — Department Portal",
+  title: "E&TC Fix — Department Portal",
   description:
-    "ENTC Department portal for announcements, events, complaints, feedback, permissions, and placement updates.",
+    "E&TC Department portal for announcements, events, complaints, feedback, permissions, and placement updates.",
 };
 
 export const dynamic = "force-dynamic";

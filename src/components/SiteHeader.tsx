@@ -24,14 +24,14 @@ export default async function SiteHeader() {
         <Link href="/" className="flex items-center gap-2">
           <Image
             src="/entc-logo.png"
-            alt="ENTC Logo"
+            alt="E&TC Logo"
             width={40}
             height={40}
             className="rounded-2xl"
             priority
           />
           <div className="leading-tight">
-            <div className="text-sm font-semibold text-slate-950">ENTC Fix</div>
+            <div className="text-sm font-semibold text-slate-950">E&TC Fix</div>
             <div className="text-xs text-slate-600">Department Portal</div>
           </div>
         </Link>

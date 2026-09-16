@@ -16,7 +16,7 @@ export async function ensureSeedData() {
       hodName: "Dr.P.S.Patil",
       vicePrincipalName: "Dr.U.R.More",
       info:
-        "ENTC Department focuses on electronics, communication systems, embedded design, and industry-ready practical skills. Use this portal for announcements, events, complaints, feedback, and permission requests.",
+        "E&TC Department focuses on electronics, communication systems, embedded design, and industry-ready practical skills. Use this portal for announcements, events, complaints, feedback, and permission requests.",
     });
   }
 
