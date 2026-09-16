@@ -37,6 +37,7 @@ export async function createPermissionRequestAction(
   });
 
   redirect("/permissions");
+  return { error: "" };
 }
 
 export async function updatePermissionStatusAction(formData: FormData) {

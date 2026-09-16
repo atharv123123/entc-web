@@ -93,6 +93,7 @@ export async function registerAction(
 
   await createSession(userId);
   redirect("/dashboard");
+  return { error: "" };
 }
 
 export async function loginAction(
@@ -131,6 +132,7 @@ export async function loginAction(
 
   await createSession(user.id);
   redirect("/dashboard");
+  return { error: "" };
 }
 
 export async function logoutAction() {
@@ -259,4 +261,5 @@ export async function resetPasswordAction(
   });
 
   redirect("/auth/login?reset=success");
+  return { error: "" };
 }

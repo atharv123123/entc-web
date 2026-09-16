@@ -30,4 +30,5 @@ export async function createFeedbackAction(
   });
 
   redirect("/dashboard");
+  return { error: "" };
 }

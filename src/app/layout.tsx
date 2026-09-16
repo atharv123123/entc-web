@@ -1,11 +1,10 @@
-import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
 
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
 
-export const metadata: Metadata = {
+export const metadata = {
   title: "ENTC Fix — Department Portal",
   description:
     "ENTC Department portal for announcements, events, complaints, feedback, permissions, and placement updates.",

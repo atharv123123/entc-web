@@ -31,6 +31,7 @@ export async function createComplaintAction(
   });
 
   redirect("/complaints");
+  return { error: "" };
 }
 
 export async function updateComplaintStatusAction(formData: FormData) {

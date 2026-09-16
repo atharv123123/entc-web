@@ -109,19 +109,19 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
   return userRow[0] ?? null;
 }
 
-export async function requireUser() {
+export async function requireUser(): Promise<CurrentUser> {
   const user = await getCurrentUser();
   if (!user) redirect("/auth/login");
-  return user;
+  return user!;
 }
 
-export async function requireAdmin() {
+export async function requireAdmin(): Promise<CurrentUser> {
   const user = await requireUser();
   if (user.role !== "admin") redirect("/dashboard");
   return user;
 }
 
-export async function requireSuperAdmin() {
+export async function requireSuperAdmin(): Promise<CurrentUser> {
   const user = await requireAdmin();
 
   const countRows = await db

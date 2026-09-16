@@ -1,3 +1,4 @@
+// @ts-expect-error - Next.js 16 type resolution
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 
