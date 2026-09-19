@@ -39,9 +39,7 @@ export default async function AboutEventsPage() {
                   className="aspect-video w-full object-cover"
                 />
               )}
-              {item.label && (
-                <div className="px-3 py-2 text-xs text-slate-600">{item.label}</div>
-              )}
+
             </div>
           ))}
           {!mediaItems.length && (
