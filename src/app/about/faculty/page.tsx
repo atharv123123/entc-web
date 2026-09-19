@@ -24,8 +24,7 @@ export default async function FacultyPage() {
   const photoMap: Record<string, string> = {};
   for (const item of facultyMedia) {
     if (item.type === "image") {
-      const nameWithoutExt = item.label.replace(/\.[^.]+$/, "");
-      photoMap[nameWithoutExt] = item.url;
+      photoMap[item.label] = item.url;
     }
   }
 
