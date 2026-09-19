@@ -3,7 +3,7 @@
 import { db } from "@/db";
 import { media } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth";
-import { supabaseAdmin, STORAGE_BUCKET } from "@/lib/supabase";
+import { getSupabaseAdmin, STORAGE_BUCKET } from "@/lib/supabase";
 import { eq, asc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { validateUUID } from "@/lib/validation";
@@ -78,7 +78,8 @@ export async function uploadMediaAction(
     const storagePath = `${category}/${uniqueName}`;
 
     const arrayBuffer = await file.arrayBuffer();
-    const { error: uploadError } = await supabaseAdmin.storage
+    const supabase = getSupabaseAdmin();
+    const { error: uploadError } = await supabase.storage
       .from(STORAGE_BUCKET)
       .upload(storagePath, arrayBuffer, {
         contentType: mimeType,
@@ -90,7 +91,7 @@ export async function uploadMediaAction(
       return { error: `Upload failed: ${uploadError.message}` };
     }
 
-    const { data: urlData } = supabaseAdmin.storage
+    const { data: urlData } = supabase.storage
       .from(STORAGE_BUCKET)
       .getPublicUrl(storagePath);
 
@@ -125,7 +126,8 @@ export async function deleteMediaAction(formData: FormData) {
   const item = rows[0];
   if (!item) return;
 
-  await supabaseAdmin.storage.from(STORAGE_BUCKET).remove([item.storagePath]);
+  const supabase = getSupabaseAdmin();
+  await supabase.storage.from(STORAGE_BUCKET).remove([item.storagePath]);
 
   await db.delete(media).where(eq(media.id, id));
 
