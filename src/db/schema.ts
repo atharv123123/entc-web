@@ -22,6 +22,12 @@ export const permissionStatusEnum = pgEnum("permission_status", [
   "approved",
   "rejected",
 ]);
+export const mediaCategoryEnum = pgEnum("media_category", [
+  "achievements",
+  "events",
+  "sports",
+  "faculty",
+]);
 
 export const users = pgTable(
   "users",
@@ -239,6 +245,30 @@ export const permissionRequests = pgTable(
     userIdIdx: index("permission_requests_user_id_idx").on(t.userId),
     statusIdx: index("permission_requests_status_idx").on(t.status),
     createdAtIdx: index("permission_requests_created_at_idx").on(t.createdAt),
+  }),
+);
+
+export const media = pgTable(
+  "media",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    category: mediaCategoryEnum("category").notNull(),
+    type: text("type").notNull(),
+    url: text("url").notNull(),
+    storagePath: text("storage_path").notNull(),
+    label: text("label").notNull().default(""),
+    sortOrder: integer("sort_order").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    createdBy: uuid("created_by").references(() => users.id, {
+      onDelete: "set null",
+    }),
+  },
+  (t) => ({
+    categoryIdx: index("media_category_idx").on(t.category),
+    sortIdx: index("media_sort_idx").on(t.sortOrder),
+    createdAtIdx: index("media_created_at_idx").on(t.createdAt),
   }),
 );
 

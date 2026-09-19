@@ -1,25 +1,9 @@
 import Link from "next/link";
 import { db } from "@/db";
 import { faculty } from "@/db/schema";
+import { getMediaByCategory } from "@/app/actions/media";
 
 export const dynamic = "force-dynamic";
-
-const photoMap: Record<string, string> = {
-  "A.D. Jadhav": "/media/faculty/A.D.Jadhav.jpeg",
-  "A.S. Jamdade": "/media/faculty/A.S.Jamdade.jpeg",
-  "P.S. Jawale": "/media/faculty/P.S.Jawale.jpeg",
-  "P.S. Patil": "/media/faculty/P.S.Patil.jpeg",
-  "S.D. Mali": "/media/faculty/S.D.Mali.jpeg",
-  "S.M. Patil": "/media/faculty/S.M.Patil.jpeg",
-  "S.M. Pawar": "/media/faculty/S.M.Pawar.jpeg",
-  "S.S. Mulla": "/media/faculty/S.S. Mulla.jpeg",
-  "U.R. More": "/media/faculty/U.R. More.jpeg",
-};
-
-const phoneMap: Record<string, string> = {
-  "S.M. Pawar": "+91 84240 39316",
-  "S.M. Patil": "+91 94238 65051",
-};
 
 function normalizeName(value: string): string {
   return value
@@ -31,25 +15,41 @@ function normalizeName(value: string): string {
     .toLowerCase();
 }
 
-function getPhotoUrl(name: string): string | null {
-  const normalizedName = normalizeName(name);
-  if (!normalizedName) return null;
-
-  const exactMatch = Object.entries(photoMap).find(
-    ([key]) => normalizeName(key) === normalizedName,
-  );
-  if (exactMatch) return exactMatch[1];
-
-  const lastName = normalizedName.split(" ").at(-1) ?? "";
-  const lastNameMatches = Object.entries(photoMap)
-    .filter(([key]) => normalizeName(key).endsWith(` ${lastName}`))
-    .map(([, value]) => value);
-
-  return lastNameMatches.length === 1 ? lastNameMatches[0] : null;
-}
-
 export default async function FacultyPage() {
-  const rows = await db.select().from(faculty);
+  const [rows, facultyMedia] = await Promise.all([
+    db.select().from(faculty),
+    getMediaByCategory("faculty"),
+  ]);
+
+  const photoMap: Record<string, string> = {};
+  for (const item of facultyMedia) {
+    if (item.type === "image") {
+      const nameWithoutExt = item.label.replace(/\.[^.]+$/, "");
+      photoMap[nameWithoutExt] = item.url;
+    }
+  }
+
+  function getPhotoUrl(name: string): string | null {
+    const normalizedName = normalizeName(name);
+    if (!normalizedName) return null;
+
+    const exactMatch = Object.entries(photoMap).find(
+      ([key]) => normalizeName(key) === normalizedName,
+    );
+    if (exactMatch) return exactMatch[1];
+
+    const lastName = normalizedName.split(" ").at(-1) ?? "";
+    const lastNameMatches = Object.entries(photoMap)
+      .filter(([key]) => normalizeName(key).endsWith(` ${lastName}`))
+      .map(([, value]) => value);
+
+    return lastNameMatches.length === 1 ? lastNameMatches[0] : null;
+  }
+
+  const phoneMap: Record<string, string> = {
+    "S.M. Pawar": "+91 84240 39316",
+    "S.M. Patil": "+91 94238 65051",
+  };
 
   return (
     <div className="space-y-6">

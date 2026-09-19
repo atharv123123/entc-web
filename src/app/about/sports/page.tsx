@@ -1,14 +1,11 @@
 import Link from "next/link";
+import { getMediaByCategory } from "@/app/actions/media";
 
 export const dynamic = "force-dynamic";
 
-const sportsMedia = [
-  { type: "image" as const, src: "/media/sports/WhatsApp Image 2026-09-16 at 2.24.10 PM.jpeg", label: "Sports Photo" },
-  { type: "video" as const, src: "/media/sports/WhatsApp Video 2026-09-16 at 2.23.54 PM.mp4", label: "Sports Video 1" },
-  { type: "video" as const, src: "/media/sports/WhatsApp Video 2026-09-16 at 2.23.59 PM.mp4", label: "Sports Video 2" },
-];
+export default async function SportsPage() {
+  const mediaItems = await getMediaByCategory("sports");
 
-export default function SportsPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -27,23 +24,31 @@ export default function SportsPage() {
       <section className="rounded-3xl border border-white/60 bg-white/70 p-6 shadow-sm backdrop-blur">
         <div className="text-sm font-semibold text-slate-950">Gallery</div>
         <div className="mt-4 grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-          {sportsMedia.map((item) => (
-            <div key={item.src} className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-100/50">
+          {mediaItems.map((item) => (
+            <div key={item.id} className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-100/50">
               {item.type === "video" ? (
                 <video
-                  src={item.src}
+                  src={item.url}
                   controls
                   className="aspect-video w-full object-cover"
                 />
               ) : (
                 <img
-                  src={item.src}
+                  src={item.url}
                   alt={item.label}
                   className="aspect-video w-full object-cover"
                 />
               )}
+              {item.label && (
+                <div className="px-3 py-2 text-xs text-slate-600">{item.label}</div>
+              )}
             </div>
           ))}
+          {!mediaItems.length && (
+            <div className="col-span-full text-center text-sm text-slate-600 py-8">
+              No media uploaded yet.
+            </div>
+          )}
         </div>
       </section>
     </div>

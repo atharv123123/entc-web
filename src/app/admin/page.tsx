@@ -5,6 +5,7 @@ import {
   complaints,
   events,
   feedback,
+  media,
   permissionRequests,
   users,
 } from "@/db/schema";
@@ -24,8 +25,10 @@ import { updateComplaintStatusAction } from "@/app/actions/complaints";
 import { updatePermissionStatusAction } from "@/app/actions/permissions";
 import { requireAdmin } from "@/lib/auth";
 import { getDepartmentSnapshot } from "@/lib/seed";
+import MediaUploader from "@/components/admin/MediaUploader";
+import MediaGrid from "@/components/admin/MediaGrid";
 import type { ReactNode } from "react";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, asc } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
@@ -50,6 +53,7 @@ export default async function AdminPage() {
     complaintRows,
     permissionRows,
     feedbackRows,
+    mediaRows,
   ] = await Promise.all([
     db.select().from(announcements).orderBy(desc(announcements.createdAt)).limit(20),
     db.select().from(events).orderBy(desc(events.eventDate)).limit(20),
@@ -98,6 +102,10 @@ export default async function AdminPage() {
       .innerJoin(users, eq(users.id, feedback.userId))
       .orderBy(desc(feedback.createdAt))
       .limit(30),
+    db
+      .select()
+      .from(media)
+      .orderBy(asc(media.sortOrder), asc(media.createdAt)),
   ]);
 
   return (
@@ -379,6 +387,30 @@ export default async function AdminPage() {
                 </div>
               ))}
               {!companyRows.length ? <div className="text-sm text-slate-600">No companies.</div> : null}
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      <Section title="Media Gallery">
+        <div className="space-y-6">
+          <div>
+            <div className="text-sm font-semibold text-slate-950">Upload new media</div>
+            <div className="mt-3">
+              <MediaUploader />
+            </div>
+          </div>
+          <div>
+            <div className="text-sm font-semibold text-slate-950">
+              All media ({mediaRows.length})
+            </div>
+            <div className="mt-3">
+              <MediaGrid
+                items={mediaRows.map((m) => ({
+                  ...m,
+                  createdAt: m.createdAt,
+                }))}
+              />
             </div>
           </div>
         </div>
