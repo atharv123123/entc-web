@@ -58,7 +58,7 @@ export async function middleware(request: NextRequest) {
   );
   response.headers.set(
     "Content-Security-Policy",
-    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://exlzcvqxtmykrvqpkzyc.supabase.co; font-src 'self'; connect-src 'self' https://exlzcvqxtmykrvqpkzyc.supabase.co; frame-ancestors 'none';",
+    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://exlzcvqxtmykrvqpkzyc.supabase.co; media-src 'self' https://exlzcvqxtmykrvqpkzyc.supabase.co; font-src 'self'; connect-src 'self' https://exlzcvqxtmykrvqpkzyc.supabase.co; frame-ancestors 'none';",
   );
 
   return response;
