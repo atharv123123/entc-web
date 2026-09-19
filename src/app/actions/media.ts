@@ -109,8 +109,19 @@ export async function uploadMediaAction(
     revalidatePath(`/about/${category}`);
     return { success: true };
   } catch (e) {
+    if (
+      e &&
+      typeof e === "object" &&
+      "digest" in e &&
+      typeof (e as { digest: string }).digest === "string" &&
+      (e as { digest: string }).digest.startsWith("NEXT_")
+    ) {
+      throw e;
+    }
     console.error("uploadMediaAction error:", e);
-    return { error: "An unexpected error occurred." };
+    const message =
+      e instanceof Error ? e.message : "An unexpected error occurred.";
+    return { error: message };
   }
 }
 
