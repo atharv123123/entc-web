@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 function normalizeName(value: string): string {
   return value
     .replace(/^(Dr|Mr|Mrs|Ms|Prof|Professor)\.?\s+/i, "")
-    .replace(/[.]/g, "")
+    .replace(/[.]/g, " ")
     .replace(/[_-]+/g, " ")
     .replace(/\s+/g, " ")
     .trim()
