@@ -6,6 +6,7 @@ import {
   events,
   feedback,
   media,
+  news,
   permissionRequests,
   users,
 } from "@/db/schema";
@@ -14,10 +15,12 @@ import {
   createAnnouncementAction,
   createCompanyAction,
   createEventAction,
+  createNewsAction,
   deleteAnnouncementAction,
   deleteCompanyAction,
   deleteEventAction,
   deleteFacultyAction,
+  deleteNewsAction,
   updateDepartmentInfoAction,
   updateStudentRoleAction,
 } from "@/app/actions/admin";
@@ -48,6 +51,7 @@ export default async function AdminPage() {
 
   const [
     announcementRows,
+    newsRows,
     eventRows,
     companyRows,
     complaintRows,
@@ -56,6 +60,7 @@ export default async function AdminPage() {
     mediaRows,
   ] = await Promise.all([
     db.select().from(announcements).orderBy(desc(announcements.createdAt)).limit(20),
+    db.select().from(news).orderBy(desc(news.createdAt)).limit(20),
     db.select().from(events).orderBy(desc(events.eventDate)).limit(20),
     db.select().from(companies).orderBy(desc(companies.createdAt)).limit(20),
     db
@@ -280,6 +285,53 @@ export default async function AdminPage() {
                 </div>
               ))}
               {!announcementRows.length ? <div className="text-sm text-slate-600">No announcements.</div> : null}
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      <Section title="News">
+        <div className="grid gap-6 md:grid-cols-2">
+          <div>
+            <div className="text-sm font-semibold text-slate-950">Create news</div>
+            <form action={createNewsAction} className="mt-3 space-y-3">
+              <input
+                name="title"
+                placeholder="Title"
+                className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none ring-indigo-600/20 focus:ring-4"
+              />
+              <textarea
+                name="body"
+                rows={4}
+                placeholder="News details"
+                className="w-full resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none ring-indigo-600/20 focus:ring-4"
+              />
+              <button className="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800">
+                Publish
+              </button>
+            </form>
+          </div>
+
+          <div>
+            <div className="text-sm font-semibold text-slate-950">Recent news</div>
+            <div className="mt-3 space-y-2">
+              {newsRows.map((n) => (
+                <div key={n.id} className="rounded-2xl border border-slate-200 bg-white/70 p-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <div className="text-sm font-semibold text-slate-950">{n.title}</div>
+                      <div className="mt-1 line-clamp-2 text-xs text-slate-600">{n.body}</div>
+                    </div>
+                    <form action={deleteNewsAction}>
+                      <input type="hidden" name="id" value={n.id} />
+                      <button className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold hover:bg-slate-50">
+                        Delete
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              ))}
+              {!newsRows.length ? <div className="text-sm text-slate-600">No news.</div> : null}
             </div>
           </div>
         </div>

@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { db } from "@/db";
-import { announcements, events } from "@/db/schema";
+import { events } from "@/db/schema";
 import { getCurrentUser } from "@/lib/auth";
 import { getDepartmentSnapshot } from "@/lib/seed";
-import { asc, desc, gte } from "drizzle-orm";
+import { asc, gte } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
@@ -17,11 +17,7 @@ function formatDate(iso: string) {
 }
 
 export default async function HomePage() {
-  const [user, dept, latestAnnouncements] = await Promise.all([
-    getCurrentUser(),
-    getDepartmentSnapshot(),
-    db.select().from(announcements).orderBy(desc(announcements.createdAt)).limit(5),
-  ]);
+  const [user, dept] = await Promise.all([getCurrentUser(), getDepartmentSnapshot()]);
 
   const today = new Date();
   const iso = today.toISOString().slice(0, 10);
@@ -31,20 +27,6 @@ export default async function HomePage() {
     .where(gte(events.eventDate, iso))
     .orderBy(asc(events.eventDate))
     .limit(5);
-
-  type TickerItem = { kind: "event" | "notice"; label: string; text: string };
-  const tickerItems: TickerItem[] = [
-    ...upcomingEvents.map((e) => ({
-      kind: "event" as const,
-      label: "EVENT",
-      text: e.location ? `${e.title} — ${formatDate(e.eventDate)} (${e.location})` : `${e.title} — ${formatDate(e.eventDate)}`,
-    })),
-    ...latestAnnouncements.map((a) => ({
-      kind: "notice" as const,
-      label: "NOTICE",
-      text: a.title,
-    })),
-  ];
 
   return (
     <div className="space-y-14">
@@ -90,44 +72,28 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {tickerItems.length ? (
-        <section className="overflow-hidden rounded-2xl border border-white/60 bg-white/70 py-3 shadow-sm backdrop-blur">
-          <div className="flex w-max animate-marquee">
-            {tickerItems.concat(tickerItems).map((item, i) => (
-              <span key={i} className="mr-10 flex shrink-0 items-center gap-2 text-sm text-slate-700">
-                <span
-                  className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                    item.kind === "event"
-                      ? "bg-indigo-100 text-indigo-700"
-                      : "bg-amber-100 text-amber-700"
-                  }`}
-                >
-                  {item.label}
-                </span>
-                {item.text}
-              </span>
-            ))}
+      {upcomingEvents.length ? (
+        <section className="rounded-3xl border border-white/60 bg-white/60 p-6 shadow-sm backdrop-blur">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div className="text-sm font-semibold text-slate-950">Upcoming Events</div>
+              <div className="text-sm text-slate-600">Events added by the department.</div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Link href="/events/list" className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold">
+                View Events
+              </Link>
+              <Link href="/events" className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold">
+                View Calendar
+              </Link>
+            </div>
           </div>
-        </section>
-      ) : null}
 
-      <section className="rounded-3xl border border-white/60 bg-white/60 p-6 shadow-sm backdrop-blur">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <div className="text-sm font-semibold text-slate-950">Upcoming Events</div>
-            <div className="text-sm text-slate-600">Quick preview of upcoming department events.</div>
-          </div>
-          <Link href="/events" className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold">
-            View Events
-          </Link>
-        </div>
-
-        <div className="mt-5 divide-y divide-slate-200">
-          {upcomingEvents.length ? (
-            upcomingEvents.map((e) => (
+          <div className="mt-5 divide-y divide-slate-200">
+            {upcomingEvents.map((e) => (
               <Link
                 key={e.id}
-                href="/events"
+                href="/events/list"
                 className="flex flex-wrap items-center justify-between gap-2 py-3"
               >
                 <div className="min-w-0">
@@ -138,12 +104,10 @@ export default async function HomePage() {
                 </div>
                 <div className="shrink-0 text-xs text-slate-500">{formatDate(e.eventDate)}</div>
               </Link>
-            ))
-          ) : (
-            <div className="py-3 text-sm text-slate-600">No upcoming events yet.</div>
-          )}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }

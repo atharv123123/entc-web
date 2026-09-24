@@ -7,6 +7,7 @@ import {
   departmentInfo,
   events,
   faculty,
+  news,
   studentRoles,
   users,
 } from "@/db/schema";
@@ -94,6 +95,25 @@ export async function deleteAnnouncementAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (!id || !validateUUID(id)) redirect("/admin");
   await db.delete(announcements).where(eq(announcements.id, id));
+  redirect("/admin");
+}
+
+export async function createNewsAction(formData: FormData) {
+  const admin = await requireAdmin();
+
+  const title = sanitizeInput(String(formData.get("title") ?? ""), 200);
+  const body = sanitizeInput(String(formData.get("body") ?? ""), 5000);
+  if (!title || !body) redirect("/admin");
+
+  await db.insert(news).values({ title, body, createdBy: admin.id });
+  redirect("/admin");
+}
+
+export async function deleteNewsAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  if (!id || !validateUUID(id)) redirect("/admin");
+  await db.delete(news).where(eq(news.id, id));
   redirect("/admin");
 }
 

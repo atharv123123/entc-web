@@ -126,6 +126,24 @@ export const announcements = pgTable(
   }),
 );
 
+export const news = pgTable(
+  "news",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    title: text("title").notNull(),
+    body: text("body").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    createdBy: uuid("created_by").references(() => users.id, {
+      onDelete: "set null",
+    }),
+  },
+  (t) => ({
+    createdAtIdx: index("news_created_at_idx").on(t.createdAt),
+  }),
+);
+
 export const complaints = pgTable(
   "complaints",
   {
