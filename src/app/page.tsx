@@ -1,43 +1,14 @@
 import Link from "next/link";
 import { db } from "@/db";
-import { announcements, events } from "@/db/schema";
+import { events } from "@/db/schema";
 import { getCurrentUser } from "@/lib/auth";
 import { getDepartmentSnapshot } from "@/lib/seed";
 import { desc, gte } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
-function FeatureCard({
-  title,
-  description,
-  href,
-}: {
-  title: string;
-  description: string;
-  href: string;
-}) {
-  return (
-    <Link
-      href={href}
-      className="group rounded-3xl border border-white/70 bg-white/70 p-6 shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:bg-white"
-    >
-      <div className="text-base font-semibold text-slate-950">{title}</div>
-      <p className="mt-2 text-sm text-slate-600">{description}</p>
-      <div className="mt-4 text-sm font-semibold text-indigo-700 group-hover:text-indigo-800">
-        Open →
-      </div>
-    </Link>
-  );
-}
-
 export default async function HomePage() {
   const [user, dept] = await Promise.all([getCurrentUser(), getDepartmentSnapshot()]);
-
-  const latestAnnouncements = await db
-    .select()
-    .from(announcements)
-    .orderBy(desc(announcements.createdAt))
-    .limit(3);
 
   const today = new Date();
   const iso = today.toISOString().slice(0, 10);
@@ -56,7 +27,7 @@ export default async function HomePage() {
           Electronics & Telecommunication Engineering
         </p>
         <h1 className="mt-4 text-balance text-4xl font-semibold leading-tight text-slate-950 md:text-5xl">
-          E&TC Department Portal — Complaints, Feedback, Announcements & Events
+          E&TC Department Student Association Portal
         </h1>
         <p className="mt-4 max-w-3xl text-base text-slate-700 md:text-lg">{dept.info.motive}</p>
         <div className="mt-8 flex flex-wrap gap-3">
@@ -92,77 +63,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-3">
-        <FeatureCard
-          title="Complaint Box"
-          description="Submit and track department-related complaints." 
-          href="/complaints"
-        />
-        <FeatureCard
-          title="Feedback"
-          description="Share suggestions and rate your experience." 
-          href="/feedback"
-        />
-        <FeatureCard
-          title="Permissions"
-          description="Request permissions (gate-pass / leave) with status tracking." 
-          href="/permissions"
-        />
-        <FeatureCard
-          title="Announcements"
-          description="Important notices from the department." 
-          href="/announcements"
-        />
-        <FeatureCard
-          title="Incoming Company"
-          description="Placement / recruitment visit updates." 
-          href="/companies"
-        />
-        <FeatureCard
-          title="Event Calendar"
-          description="Department events, seminars and deadlines." 
-          href="/events"
-        />
-      </section>
-
-      <section className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-3xl border border-white/60 bg-white/60 p-6 shadow-sm backdrop-blur">
-          <div className="text-sm font-semibold text-slate-950">Department Leadership</div>
-          <div className="mt-4 grid gap-3 text-sm text-slate-700">
-            <div className="flex items-start justify-between gap-3">
-              <span className="text-slate-600">HOD</span>
-              <span className="font-semibold text-slate-950">{dept.info.hodName}</span>
-            </div>
-            <div className="flex items-start justify-between gap-3">
-              <span className="text-slate-600">Vice Principal</span>
-              <span className="font-semibold text-slate-950">{dept.info.vicePrincipalName}</span>
-            </div>
-          </div>
-          <Link href="/department" className="mt-5 inline-block text-sm font-semibold text-indigo-700">
-            View professors & student council →
-          </Link>
-        </div>
-
-        <div className="rounded-3xl border border-white/60 bg-white/60 p-6 shadow-sm backdrop-blur">
-          <div className="text-sm font-semibold text-slate-950">Latest Announcements</div>
-          <div className="mt-4 space-y-3">
-            {latestAnnouncements.length ? (
-              latestAnnouncements.map((a) => (
-                <div key={a.id} className="rounded-2xl border border-slate-200 bg-white/70 p-4">
-                  <div className="text-sm font-semibold text-slate-950">{a.title}</div>
-                  <div className="mt-1 line-clamp-2 text-sm text-slate-600">{a.body}</div>
-                </div>
-              ))
-            ) : (
-              <div className="text-sm text-slate-600">No announcements yet.</div>
-            )}
-          </div>
-          <Link href="/announcements" className="mt-5 inline-block text-sm font-semibold text-indigo-700">
-            View all →
-          </Link>
-        </div>
-      </section>
-
       <section className="rounded-3xl border border-white/60 bg-white/60 p-6 shadow-sm backdrop-blur">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -191,4 +91,3 @@ export default async function HomePage() {
     </div>
   );
 }
-

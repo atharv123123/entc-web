@@ -26,7 +26,9 @@ async function fetchGoogleCalendarEvents(
   try {
     const email = process.env.GOOGLE_CALENDAR_EMAIL ?? "dietentc@gmail.com";
     const encodedEmail = encodeURIComponent(email);
-    const url = `https://calendar.google.com/calendar/ical/${encodedEmail}/public/basic.ics`;
+    const url =
+      process.env.GOOGLE_CALENDAR_ICS_URL ??
+      `https://calendar.google.com/calendar/ical/${encodedEmail}/public/basic.ics`;
     const res = await fetch(url, { next: { revalidate: 60 } });
     if (!res.ok) return [];
 

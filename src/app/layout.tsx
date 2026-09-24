@@ -5,7 +5,7 @@ import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
 
 export const metadata = {
-  title: "E&TC Fix — Department Portal",
+  title: "Electronics and Telecommunication Department — Student Association Portal",
   description:
     "E&TC Department portal for announcements, events, complaints, feedback, permissions, and placement updates.",
 };

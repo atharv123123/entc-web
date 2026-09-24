@@ -31,7 +31,7 @@ export default async function SiteHeader() {
             priority
           />
           <div className="leading-tight">
-            <div className="text-sm font-semibold text-slate-950">E&TC Fix</div>
+            <div className="text-sm font-semibold text-slate-950">Electronics and Telecommunication Department</div>
             <div className="text-xs text-slate-600">Department Portal</div>
           </div>
         </Link>
@@ -39,6 +39,7 @@ export default async function SiteHeader() {
         <nav className="hidden items-center gap-1 md:flex">
           <NavLink href="/about">About</NavLink>
           <NavLink href="/department">Department</NavLink>
+          <NavLink href="/home">Home</NavLink>
           <NavLink href="/announcements">Announcements</NavLink>
         </nav>
 
